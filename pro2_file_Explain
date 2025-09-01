@@ -1,0 +1,136 @@
+Sure! Here's a breakdown of what your code is doing step-by-step:
+
+---
+
+### 1. **Importing libraries**
+
+```python
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+```
+
+* `pandas` (pd) for data manipulation.
+* `seaborn` (sns) for statistical data visualization.
+* `matplotlib.pyplot` (plt) for plotting.
+
+---
+
+### 2. **Reading the data**
+
+```python
+df = pd.read_csv('netflix.csv')
+```
+
+* Loads the Netflix dataset from a CSV file into a pandas DataFrame called `df`.
+
+---
+
+### 3. **Preprocessing the data**
+
+* Convert the **Release\_Date** column to datetime format and extract the year.
+
+```python
+df['Release_Date'] = pd.to_datetime(df['Release_Date'], errors='coerce')
+df['Year'] = df['Release_Date'].dt.year
+```
+
+* Converts the `Release_Date` string to a datetime object.
+
+* Extracts just the year part from the date and stores it in a new column `Year`.
+
+* Extract duration in minutes for movies.
+
+```python
+df['Duration_Minutes'] = df['Duration'].str.extract(r'(\d+)').astype(float)
+```
+
+* The `Duration` column probably has strings like "90 min" or "1 Season".
+* Extracts the numeric part (duration in minutes) and converts it to a float.
+
+---
+
+### 4. **Plotting**
+
+* **Plot 1: Movies vs TV Shows**
+
+```python
+sns.countplot(x='Category', data=df)
+plt.title('Movies vs TV Shows')
+plt.show()
+```
+
+* Counts how many titles are Movies and how many are TV Shows.
+* Displays a bar chart comparing the counts.
+
+---
+
+* **Plot 2: Titles by Rating**
+
+```python
+sns.countplot(x='Rating', data=df, order=df['Rating'].value_counts().index)
+plt.title('Titles by Rating')
+plt.xticks(rotation=45)
+plt.show()
+```
+
+* Counts titles by their rating (like PG, R, etc.).
+* Orders the bars by the most common ratings.
+* Rotates the x-axis labels for better readability.
+
+---
+
+* **Plot 3: Top 10 Countries by Number of Titles**
+
+```python
+top_countries = df['Country'].value_counts().head(10)
+sns.barplot(y=top_countries.index, x=top_countries.values)
+plt.title('Top 10 Countries')
+plt.show()
+```
+
+* Finds the top 10 countries with the most titles.
+* Plots a horizontal bar chart showing these countries and their counts.
+
+---
+
+* **Plot 4: Movie Duration Distribution**
+
+```python
+sns.histplot(df[df['Category']=='Movie']['Duration_Minutes'].dropna(), bins=30, kde=True)
+plt.title('Movie Duration (minutes)')
+plt.show()
+```
+
+* Looks only at movies (`Category == 'Movie'`).
+* Plots a histogram showing the distribution of movie durations.
+* Adds a KDE (Kernel Density Estimate) curve to show the smoothed distribution.
+
+---
+
+* **Plot 5: Titles Released Per Year**
+
+```python
+sns.countplot(x='Year', data=df, order=sorted(df['Year'].dropna().unique()))
+plt.title('Titles Released Per Year')
+plt.xticks(rotation=45)
+plt.show()
+```
+
+* Counts how many titles were released each year.
+* Orders the x-axis by year.
+* Rotates labels for readability.
+
+---
+
+### Summary
+
+Your code loads a Netflix dataset, cleans and preprocesses date and duration information, then creates five visualizations to explore:
+
+* The breakdown of Movies vs TV Shows.
+* Distribution of titles by rating.
+* Top countries producing Netflix content.
+* Distribution of movie durations.
+* Number of titles released each year.
+
+If you want, I can help explain any specific part or suggest improvements!
