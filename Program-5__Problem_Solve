@@ -75,3 +75,188 @@ Step 4: Compute Accuracy
 Test your model on a few test records.
 
 Accuracy = (# correct predictions) / (total test records)
+
+
+
+
+
+
+Real:::::
+
+
+Perfect! Let’s solve the **Naïve Bayes classifier manually** for your dataset step by step. I’ll show all calculations clearly.
+
+Your dataset (4 records):
+
+| sky   | airtemp | humidity | wind   | water | forcast | enjoysport |
+| ----- | ------- | -------- | ------ | ----- | ------- | ---------- |
+| sunny | warm    | normal   | strong | warm  | same    | yes        |
+| sunny | warm    | high     | strong | warm  | same    | yes        |
+| rainy | cold    | high     | strong | warm  | change  | no         |
+| sunny | warm    | high     | strong | cool  | change  | yes        |
+
+---
+
+## **Step 1: Prior Probabilities**
+
+Count of each class:
+
+* `yes` = 3 → ( P(yes) = 3/4 = 0.75 )
+* `no` = 1 → ( P(no) = 1/4 = 0.25 )
+
+---
+
+## **Step 2: Likelihoods (Conditional Probabilities)**
+
+We calculate ( P(feature=value | class) ) with **Laplace smoothing** to avoid zero.
+
+[
+P(x|c) = \frac{\text{count in class} + 1}{\text{total in class} + \text{number of unique values of feature}}
+]
+
+---
+
+### **Feature 1: sky**
+
+Unique values: sunny, rainy → 2 values
+
+| Class | sky=sunny             | sky=rainy             |
+| ----- | --------------------- | --------------------- |
+| yes   | (3+1)/(3+2)=4/5=0.8   | (0+1)/(3+2)=1/5=0.2   |
+| no    | (0+1)/(1+2)=1/3≈0.333 | (1+1)/(1+2)=2/3≈0.667 |
+
+---
+
+### **Feature 2: airtemp**
+
+Unique values: warm, cold → 2 values
+
+| Class | warm              | cold              |
+| ----- | ----------------- | ----------------- |
+| yes   | (3+1)/(3+2)=0.8   | (0+1)/(3+2)=0.2   |
+| no    | (0+1)/(1+2)=0.333 | (1+1)/(1+2)=0.667 |
+
+---
+
+### **Feature 3: humidity**
+
+Unique values: normal, high → 2 values
+
+| Class | normal                | high                  |
+| ----- | --------------------- | --------------------- |
+| yes   | (1+1)/(3+2)=2/5=0.4   | (2+1)/(3+2)=3/5=0.6   |
+| no    | (0+1)/(1+2)=1/3≈0.333 | (1+1)/(1+2)=2/3≈0.667 |
+
+---
+
+### **Feature 4: wind**
+
+Unique values: strong → 1 value (all strong)
+
+| Class | strong          |
+| ----- | --------------- |
+| yes   | (3+1)/(3+1)=1.0 |
+| no    | (1+1)/(1+1)=1.0 |
+
+---
+
+### **Feature 5: water**
+
+Unique values: warm, cool → 2 values
+
+| Class | warm                  | cool                  |
+| ----- | --------------------- | --------------------- |
+| yes   | (2+1)/(3+2)=3/5=0.6   | (1+1)/(3+2)=2/5=0.4   |
+| no    | (1+1)/(1+2)=2/3≈0.667 | (0+1)/(1+2)=1/3≈0.333 |
+
+---
+
+### **Feature 6: forcast**
+
+Unique values: same, change → 2 values
+
+| Class | same                  | change                |
+| ----- | --------------------- | --------------------- |
+| yes   | (2+1)/(3+2)=3/5=0.6   | (1+1)/(3+2)=2/5=0.4   |
+| no    | (0+1)/(1+2)=1/3≈0.333 | (1+1)/(1+2)=2/3≈0.667 |
+
+---
+
+## **Step 3: Predict Test Record**
+
+Test Record:
+
+```
+sky=sunny, airtemp=warm, humidity=high, wind=strong, water=cool, forcast=same
+```
+
+---
+
+### **Probability for `yes`**
+
+[
+P(yes|X) \propto P(yes) \times P(sky=sunny|yes) \times P(airtemp=warm|yes) \times ...
+]
+
+Substitute values:
+
+[
+P(yes|X) = 0.75 \times 0.8 \times 0.8 \times 0.6 \times 1.0 \times 0.4 \times 0.6
+]
+
+Step by step:
+
+1. (0.75 \times 0.8 = 0.6)
+2. (0.6 \times 0.8 = 0.48)
+3. (0.48 \times 0.6 = 0.288)
+4. (0.288 \times 1.0 = 0.288)
+5. (0.288 \times 0.4 = 0.1152)
+6. (0.1152 \times 0.6 ≈ 0.06912)
+
+✅ ( P(yes|X) ≈ 0.069 )
+
+---
+
+### **Probability for `no`**
+
+[
+P(no|X) = 0.25 \times 0.333 \times 0.333 \times 0.667 \times 1.0 \times 0.333 \times 0.333
+]
+
+Step by step:
+
+1. (0.25 \times 0.333 ≈ 0.08325)
+2. (0.08325 \times 0.333 ≈ 0.0277)
+3. (0.0277 \times 0.667 ≈ 0.0185)
+4. (0.0185 \times 1.0 = 0.0185)
+5. (0.0185 \times 0.333 ≈ 0.00616)
+6. (0.00616 \times 0.333 ≈ 0.00205)
+
+✅ ( P(no|X) ≈ 0.002 )
+
+---
+
+### **Decision**
+
+Since ( P(yes|X) > P(no|X) ), **predict = yes**
+
+---
+
+### **Step 4: Compute Accuracy**
+
+Suppose we have two test records:
+
+1. `{'sky':'sunny','airtemp':'warm','humidity':'high','wind':'strong','water':'cool','forcast':'same'}` → True = yes
+2. `{'sky':'rainy','airtemp':'cold','humidity':'high','wind':'strong','water':'warm','forcast':'change'}` → True = no
+
+* Prediction for record 1 = yes ✅
+* Prediction for record 2 = no ✅
+
+Accuracy = 2/2 = **100%**
+
+---
+
+If you want, I can **draw the full probability table** for all features and classes so you can visualize it like a proper Naïve Bayes table. This is very useful if you want to **solve any new test record manually**.
+
+Do you want me to make that table?
+
