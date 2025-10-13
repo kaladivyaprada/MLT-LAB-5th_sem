@@ -1,0 +1,77 @@
+Great! You want a manual implementation of a Naïve Bayes classifier using your sample CSV dataset. Let’s go step by step, including how to calculate probabilities, predict values, and compute accuracy.
+
+Here’s the dataset you provided:
+
+sky	airtemp	humidity	wind	water	forcast	enjoysport
+sunny	warm	normal	strong	warm	same	yes
+sunny	warm	high	strong	warm	same	yes
+rainy	cold	high	strong	warm	change	no
+sunny	warm	high	strong	cool	change	yes
+
+
+Step 1: Calculate Prior Probabilities
+
+We first calculate the probability of each class (enjoysport=yes or no).
+
+Total records = 4
+
+Count of yes = 3 → 
+P(yes)=3/4=0.75
+P(yes)=3/4=0.75
+
+Count of no = 1 → 
+P(no)=1/4=0.25
+P(no)=1/4=0.25
+
+
+
+
+Step 2: Calculate Likelihoods
+
+Naïve Bayes uses conditional probabilities:
+
+P(Feature=value | Class)
+P(Feature=value | Class)
+Example: Feature sky
+
+P(sky=sunny | enjoysport=yes) → number of sunny in yes / total yes = 3/3 = 1
+
+P(sky=rainy | enjoysport=yes) = 0/3 = 0
+
+P(sky=sunny | enjoysport=no) = 0/1 = 0
+
+P(sky=rainy | enjoysport=no) = 1/1 = 1
+
+Do this for all features.
+
+
+Step 3: Predict a Test Record
+
+Suppose a new test record:
+sky=sunny, airtemp=warm, humidity=high, wind=strong, water=cool, forcast=same
+
+We calculate the posterior probability for each class:
+
+P(yes∣X)∝P(yes)×P(sunny∣yes)×P(warm∣yes)×...
+P(yes∣X)∝P(yes)×P(sunny∣yes)×P(warm∣yes)×...
+P(no∣X)∝P(no)×P(sunny∣no)×P(warm∣no)×...
+P(no∣X)∝P(no)×P(sunny∣no)×P(warm∣no)×...
+
+Then pick the class with the higher probability.
+
+⚠️ If any conditional probability is 0, we can use Laplace smoothing:
+
+P(x∣c)=count+1total count for class+num of feature values
+P(x∣c)=
+total count for class+num of feature values
+count+1
+	​
+
+
+
+
+Step 4: Compute Accuracy
+
+Test your model on a few test records.
+
+Accuracy = (# correct predictions) / (total test records)
