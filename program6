@@ -1,0 +1,45 @@
+import pandas as pd
+from pgmpy.models import DiscreteBayesianNetwork
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.inference import VariableElimination
+
+# Load the dataset
+data = pd.read_csv("heart.csv")  # Replace with your actual file path
+
+# Drop rows with missing values
+data = data.dropna()
+
+# Convert all columns to numeric
+for col in data.columns:
+    data[col] = pd.to_numeric(data[col], errors='coerce')
+
+# Discretize continuous variables
+data['age'] = pd.cut(data['age'], bins=3, labels=[0, 1, 2])
+data['trestbps'] = pd.cut(data['trestbps'], bins=3, labels=[0, 1, 2])
+data['chol'] = pd.cut(data['chol'], bins=3, labels=[0, 1, 2])
+data['thalach'] = pd.cut(data['thalach'], bins=3, labels=[0, 1, 2])
+data['oldpeak'] = pd.cut(data['oldpeak'], bins=3, labels=[0, 1, 2])
+
+# Define the Bayesian Network structure
+model = DiscreteBayesianNetwork([
+    ('age', 'cp'),
+    ('sex', 'cp'),
+    ('cp', 'target'),
+    ('trestbps', 'target'),
+    ('chol', 'target'),
+    ('thal', 'target')
+])
+
+# Train the model
+model.fit(data, estimator=MaximumLikelihoodEstimator)
+
+# Inference engine
+inference = VariableElimination(model)
+
+# Example diagnosis: Predict heart disease probability given cp=2 and thal=2
+result = inference.query(variables=['target'], evidence={'cp': 2, 'thal': 2})
+
+# Display results
+print("Probability of Heart Disease given cp=2 and thal=2:")
+for i, prob in enumerate(result.values):
+    print(f"target = {i}: {prob:.4f}")
