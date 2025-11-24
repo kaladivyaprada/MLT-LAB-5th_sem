@@ -1,0 +1,182 @@
+
+
+ #1.Find-S
+ from sklearn import datasets
+ import pandas as pd
+ iris = datasets.load_iris()
+ df = pd.DataFrame(iris.data)
+ df["y"] = iris.target
+ for i in range(4): df[i] = pd.cut(df[i],3,labels=["low","med","high"])
+ S = list(df[df.y==0].iloc[0,:4])
+ for _, r in df[df.y==0].iterrows():
+ for i in range(4):
+ if S[i]!=r[i]: S[i]="?"
+ print(S)
+
+----------------------------------------------------------------------
+
+ 
+
+ #2.Candidate-Elimination
+ from sklearn import datasets
+ import pandas as pd
+ iris = datasets.load_iris()Write a program to implement the naïve Bayesian classifier for a sample training data
+set stored as a .CSV file. Compute the accuracy of the classifier, considering few test
+data sets.
+ df = pd.DataFrame(iris.data)
+ df["y"] = iris.target
+ for i in range(4): df[i] = pd.cut(df[i], 3, labels=["low","med","high"])
+ S, G = ['0']*4, [['?']*4]
+ for _, r in df.iterrows():
+ if r.iloc[4]==0:
+ for i in range(4):
+ if S[i]=='0': S[i]=r[i]
+ elif S[i]!=r[i]: S[i]='?'
+ print("S:", S)
+ print("G:", G[0])
+
+----------------------------------------------------------------------------------------------
+
+ 
+
+#3 ID-3 Decision Tree
+
+ 
+
+ from sklearn import datasets
+ from sklearn.model_selection import train_test_split
+ from sklearn.tree import DecisionTreeClassifier, plot_tree
+ from sklearn.metrics import confusion_matrix, accuracy_score, roc_curve, auc
+ from sklearn.preprocessing import label_binarize
+ import matplotlib.pyplot as plt
+ # Load and split data
+ iris = datasets.load_iris()
+ Xtr, Xte, ytr, yte = train_test_split(iris.data, iris.target, test_size=0.3, random_state=1)
+ # Train model
+ m = DecisionTreeClassifier(criterion="entropy").fit(Xtr, ytr)
+ yp = m.predict(Xte)
+ # Results
+ print("Confusion Matrix:\n", confusion_matrix(yte, yp))
+ print("Accuracy:", round(accuracy_score(yte, yp)*100, 2), "%")
+ # Plot Decision Tree
+ plot_tree(m, filled=True, feature_names=iris.feature_names, class_names=iris.target_names)
+ plt.show()
+ # ROC curves (no for loop)
+ yb = label_binarize(yte, classes=[0,1,2])
+ p = m.predict_proba(Xte)
+ f1, t1, _ = roc_curve(yb[:,0], p[:,0])
+ f2, t2, _ = roc_curve(yb[:,1], p[:,1])
+ f3, t3, _ = roc_curve(yb[:,2], p[:,2])
+ plt.plot(f1, t1, label=f"Setosa (AUC={auc(f1,t1):.2f})")
+ plt.plot(f2, t2, label=f"Versicolor (AUC={auc(f2,t2):.2f})")
+ plt.plot(f3, t3, label=f"Virginica (AUC={auc(f3,t3):.2f})")
+ plt.plot([0,1],[0,1],'--')
+ plt.legend(); plt.title("ROC Curve - ID3"); plt.show()
+
+-------------------------------------------------------------------------------------------------------------
+
+ 
+
+ #4.Back Propagation
+ from sklearn import datasets
+ from sklearn.model_selection import train_test_split
+ from sklearn.neural_network import MLPClassifier
+ from sklearn.metrics import confusion_matrix, accuracy_score
+ iris = datasets.load_iris()
+ X, y = iris.data, iris.target
+ Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.3, random_state=1)
+ model = MLPClassifier(hidden_layer_sizes=(6,), activation='relu', solver='adam', max_iter=1000)
+ model.fit(Xtr, ytr)
+ yp = model.predict(Xte)
+ print("Confusion Matrix:\n", confusion_matrix(yte, yp))
+ print("Accuracy:", round(accuracy_score(yte, yp)*100, 2), "%")
+
+-----------------------------------------------------------------------------------------------------------------
+
+#5.Naive Bayes Classifier
+mport pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+from sklearn.datasets import load_iris
+
+# ---- Load Iris Dataset ----Write a program to implement the naïve Bayesian classifier for a sample training data
+set stored as a .CSV file. Compute the accuracy of the classifier, considering few test
+data sets.
+iris = load_iris()
+X = pd.DataFrame(iris.data, columns=iris.feature_names)
+y = pd.Series(iris.target)   # 0=setosa, 1=versicolor, 2=virginica
+
+# ---- Train-test split ----
+Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.3, random_state=1)
+
+# ---- Train Naive Bayes ----
+model = GaussianNB().fit(Xtr, ytr)
+
+# ---- Predictions ----
+yp = model.predict(Xte)
+
+# ---- Accuracy ----
+print("Accuracy:", accuracy_score(yte, yp))
+print("Predictions:", yp)
+-----------------------------------------------------------------------------------
+#6 Bayesian Network 
+
+from pgmpy.models import BayesianNetwork
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from sklearn import datasets
+import pandas as pd
+
+iris = datasets.load_iris()
+df = pd.DataFrame(iris.data, columns=iris.feature_names)
+df['target'] = iris.target
+
+model = BayesianNetwork([
+    ("sepal length (cm)", "target"),
+    ("sepal width (cm)", "target"),
+    ("petal length (cm)", "target"),
+    ("petal width (cm)", "target")
+])
+
+model.fit(df, estimator=MaximumLikelihoodEstimator)
+
+# Remove target so the model predicts it
+test = df.iloc[:5].drop('target', axis=1)
+
+print("Predictions:\n", model.predict(test))
+
+--------------------------------------------------------------------------------------
+ #7 KNN
+ 
+ from sklearn import datasets
+from sklearn.neighbors import KNeighborsClassifier
+import matplotlib.pyplot as plt
+
+iris = datasets.load_iris()
+X, y = iris.data, iris.target
+
+acc = [KNeighborsClassifier(k).fit(X,y).score(X,y) for k in range(1,11)]
+plt.plot(range(1,11), acc, marker='o'); plt.show()
+
+k = acc.index(max(acc))+1
+m = KNeighborsClassifier(k).fit(X,y)
+yp = m.predict(X)
+
+print("Correct:", [(y[i], yp[i]) for i in range(len(y)) if y[i]==yp[i]])
+print("Wrong:",   [(y[i], yp[i]) for i in range(len(y)) if y[i]!=yp[i]])
+----------------------------------------------------------------------------------------
+
+#8 Locally Weighted Regression
+import numpy as np, matplotlib.pyplot as plt
+
+X = np.linspace(0,10,20); y = np.sin(X)+np.random.randn(20)*0.2
+X = X.reshape(-1,1)
+
+def lwr(x,X,y,t=.5):
+    w=np.exp(-((X-x)**2)/(2*t*t)); W=np.diag(w.flatten())
+    return (np.linalg.pinv(X.T@W@X)@(X.T@W@y))*x
+
+xt = np.linspace(0,10,100).reshape(-1,1)
+yp = [lwr(i,X,y) for i in xt]
+
+plt.scatter(X,y); plt.plot(xt,yp,'r'); plt.title("LWR"); plt.show()
